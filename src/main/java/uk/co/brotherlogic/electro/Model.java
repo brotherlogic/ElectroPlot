@@ -64,10 +64,14 @@ public class Model {
 
 	public void initModel() {
 		try {
+			
+			if (locDB == null)
+			{
 			Class.forName("org.postgresql.Driver");
 
 			locDB = DriverManager
 					.getConnection("jdbc:postgresql://192.168.1.100/leccy?user=leccy");
+			}
 
 			String sql = "SELECT dt,watts from leccy";
 			PreparedStatement ps = locDB.prepareStatement(sql);
@@ -76,6 +80,7 @@ public class Model {
 				ps = locDB.prepareStatement(sql);
 				ps.setTimestamp(1, new Timestamp(readings.get(
 						readings.size() - 1).getTime().longValue()));
+				System.out.println(ps);
 			}
 
 			ResultSet rs = ps.executeQuery();
@@ -84,6 +89,7 @@ public class Model {
 						.getInt(2));
 				readings.add(r);
 			}
+			rs.close();
 			long sTime = System.currentTimeMillis();
 			Collections.sort(readings);
 
