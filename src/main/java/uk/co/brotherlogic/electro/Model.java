@@ -37,7 +37,7 @@ public class Model {
 	private List<Reading> getReadingsFromPastHour() {
 		initModel();
 		List<Reading> tReadings = new LinkedList<Reading>();
-		long cTime = System.currentTimeMillis() - 60 * 60 * 1000;
+		long cTime = System.currentTimeMillis() - 3* 60 * 60 * 1000;
 		for (Reading r : readings)
 			if (r.getTime() > cTime)
 				tReadings.add(r);
