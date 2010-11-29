@@ -37,7 +37,7 @@ public class Model {
 	private List<Reading> getReadingsFromPastHour() {
 		initModel();
 		List<Reading> tReadings = new LinkedList<Reading>();
-		long cTime = System.currentTimeMillis() - 1 * 60 * 60 * 1000;
+		long cTime = System.currentTimeMillis() - 2 * 60 * 60 * 1000;
 		for (Reading r : readings)
 			if (r.getTime() > cTime)
 				tReadings.add(r);
@@ -73,20 +73,20 @@ public class Model {
 					.getConnection("jdbc:postgresql://192.168.1.100/leccy?user=leccy");
 			}
 
-			String sql = "SELECT dt,watts from leccy";
+			String sql = "SELECT dt,watts from leccy order by dt DESC LIMIT 1000";
 			PreparedStatement ps = locDB.prepareStatement(sql);
 			if (readings.size() > 0) {
 				sql = "SELECT dt,watts from leccy WHERE dt > ?";
 				ps = locDB.prepareStatement(sql);
 				ps.setTimestamp(1, new Timestamp(readings.get(
 						readings.size() - 1).getTime().longValue()));
-				System.out.println(ps);
 			}
 
+			System.err.println(ps);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				Reading r = new Reading(rs.getTimestamp(1).getTime(), rs
-						.getInt(2));
+						.getDouble(2));
 				readings.add(r);
 			}
 			rs.close();

@@ -19,8 +19,8 @@ public class PlotPane extends JPanel implements ModelListener {
 		double minTime = readings.get(0).getTime();
 		double maxTime = minTime;
 
-		double minRead = 0;
-		double maxRead = minRead;
+		double minRead = 30;
+		double maxRead = 0;
 
 		for (Reading r : readings.subList(1, readings.size())) {
 			minTime = Math.min(minTime, r.getTime());
