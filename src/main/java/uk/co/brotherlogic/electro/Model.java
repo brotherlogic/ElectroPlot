@@ -15,8 +15,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class Model {
+   int sensor;
 	public static void main(String[] args) {
-		Model m = new Model();
+		Model m = new Model(Integer.parseInt(args[0]));
 		PlotPane p = new PlotPane(m);
 		JFrame framer = new JFrame();
 		framer.add(p);
@@ -29,7 +30,8 @@ public class Model {
 
 	private final List<Reading> readings = new LinkedList<Reading>();
 
-	public Model() {
+	public Model(int sens) {
+	   this.sensor = sens;
 		long sTime = System.currentTimeMillis();
 		initModel();
 	}
@@ -74,13 +76,16 @@ public class Model {
 					.getConnection("jdbc:postgresql://192.168.1.100/leccy?user=leccy");
 			}
 
-			String sql = "SELECT dt,watts from leccy order by dt DESC LIMIT 100000";
+			String sql = "SELECT dt,watts from leccy WHERE sensor = ? order by dt DESC LIMIT 100000";
+
 			PreparedStatement ps = locDB.prepareStatement(sql);
+			ps.setInt(1, sensor);
 			if (readings.size() > 0) {
-				sql = "SELECT dt,watts from leccy WHERE dt > ?";
+				sql = "SELECT dt,watts from leccy WHERE dt > ? and sensor = ?";
 				ps = locDB.prepareStatement(sql);
 				ps.setTimestamp(1, new Timestamp(readings.get(
 						readings.size() - 1).getTime().longValue()));
+				ps.setInt(2, sensor);
 			}
 			
 			System.out.println(ps);

@@ -1,5 +1,6 @@
 package uk.co.brotherlogic.electro;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.List;
 
@@ -29,6 +30,12 @@ public class PlotPane extends JPanel implements ModelListener {
 			minRead = Math.min(minRead, r.getReading());
 			maxRead = Math.max(maxRead, r.getReading());
 		}
+		
+		Color c = g.getColor();
+		g.setColor(Color.red);
+		g.drawString("" + maxRead, this.getWidth()-100, 10);
+		g.drawString("" + minRead,this.getWidth()-100,this.getHeight()-50);   
+		g.setColor(c);
 
 		int sPointX = 0;
 		int sPointY = 0;
