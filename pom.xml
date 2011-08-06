@@ -51,7 +51,7 @@
             </execution>
 	  </executions>
           <configuration>
-            <mainClass>uk.co.brotherlogic.electro.Model</mainClass>
+            <mainClass>uk.co.brotherlogic.electro.SuperPlot</mainClass>
           </configuration>
 	</plugin>
       </plugins>

@@ -14,115 +14,133 @@ import java.util.TimerTask;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class Model {
+public class Model
+{
    int sensor;
-	public static void main(String[] args) {
-		Model m = new Model(Integer.parseInt(args[0]));
-		PlotPane p = new PlotPane(m);
-		JFrame framer = new JFrame();
-		framer.add(p);
-		framer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		framer.setSize(500, 500);
-		framer.setVisible(true);
-	}
 
-	private Connection locDB;
+   public static void main(String[] args)
+   {
+      Model m = new Model(Integer.parseInt(args[0]));
+      PlotPane p = new PlotPane(m);
+      JFrame framer = new JFrame();
+      framer.add(p);
+      framer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      framer.setSize(500, 500);
+      framer.setVisible(true);
+   }
 
-	private final List<Reading> readings = new LinkedList<Reading>();
+   private Connection locDB;
 
-	public Model(int sens) {
-	   this.sensor = sens;
-		long sTime = System.currentTimeMillis();
-		initModel();
-	}
+   private final List<Reading> readings = new LinkedList<Reading>();
 
-	private List<Reading> getReadingsFromPastHour() {
-		initModel();
-		List<Reading> tReadings = new LinkedList<Reading>();
-		long cTime = System.currentTimeMillis() - 24 * 60 * 60 * 1000;
-		for (Reading r : readings)
-			if (r.getTime() > cTime)
-				tReadings.add(r);
-		return tReadings;
-	}
+   public Model(int sens)
+   {
+      this.sensor = sens;
+      long sTime = System.currentTimeMillis();
+      initModel();
+   }
 
-	public List<Reading> getReadingsFromPastHour(final ModelListener listener) {
+   private List<Reading> getReadingsFromPastHour()
+   {
+      initModel();
+      List<Reading> tReadings = new LinkedList<Reading>();
+      long cTime = System.currentTimeMillis() - 2 * 60 * 60 * 1000;
+      for (Reading r : readings)
+         if (r.getTime() > cTime && r.getReading() < 30000)
+            tReadings.add(r);
+      return tReadings;
+   }
 
-		List<Reading> sReadings = getReadingsFromPastHour();
+   public List<Reading> getReadingsFromPastHour(final ModelListener listener)
+   {
 
-		// Start a timer task
-		TimerTask task = new TimerTask() {
+      List<Reading> sReadings = getReadingsFromPastHour();
 
-			@Override
-			public void run() {
-				listener.update(getReadingsFromPastHour());
-			}
-		};
-		Timer timer = new Timer();
-		timer.schedule(task, 1000, 1000);
+      // Start a timer task
+      TimerTask task = new TimerTask()
+      {
 
-		return sReadings;
-	}
+         @Override
+         public void run()
+         {
+            listener.update(getReadingsFromPastHour());
+         }
+      };
+      Timer timer = new Timer();
+      timer.schedule(task, 1000, 1000);
 
-	public void initModel() {
-		try {
-			
-			if (locDB == null)
-			{
-			Class.forName("org.postgresql.Driver");
+      return sReadings;
+   }
 
-			locDB = DriverManager
-					.getConnection("jdbc:postgresql://192.168.1.100/leccy?user=leccy");
-			}
+   public void initModel()
+   {
+      try
+      {
 
-			String sql = "SELECT dt,watts from leccy WHERE sensor = ? order by dt DESC LIMIT 100000";
-			PreparedStatement ps = locDB.prepareStatement(sql);
-			ps.setInt(1, sensor);
-			if (readings.size() > 0) {
-				sql = "SELECT dt,watts from leccy WHERE dt > ? and sensor = ?";
-				ps = locDB.prepareStatement(sql);
-				ps.setTimestamp(1, new Timestamp(readings.get(
-						readings.size() - 1).getTime().longValue()));
-				ps.setInt(2, sensor);
-			}
+         if (locDB == null)
+         {
+            Class.forName("org.postgresql.Driver");
 
-			ResultSet rs = ps.executeQuery();
-			while (rs.next()) {
-				Reading r = new Reading(rs.getTimestamp(1).getTime(), rs
-						.getDouble(2));
-				readings.add(r);
-			}
-			rs.close();
-			long sTime = System.currentTimeMillis();
-			Collections.sort(readings);
+            locDB = DriverManager.getConnection("jdbc:postgresql://192.168.1.100/leccy?user=leccy");
+         }
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, e.getLocalizedMessage());
-		}
-	}
+         String sql = "SELECT dt,watts from leccy WHERE sensor = ? order by dt DESC LIMIT 100000";
+         PreparedStatement ps = locDB.prepareStatement(sql);
+         ps.setInt(1, sensor);
+         if (readings.size() > 0)
+         {
+            sql = "SELECT dt,watts from leccy WHERE dt > ? and sensor = ?";
+            ps = locDB.prepareStatement(sql);
+            ps.setTimestamp(1, new Timestamp(readings.get(readings.size() - 1).getTime()
+                  .longValue()));
+            ps.setInt(2, sensor);
+         }
+
+         ResultSet rs = ps.executeQuery();
+         while (rs.next())
+         {
+            Reading r = new Reading(rs.getTimestamp(1).getTime(), rs.getDouble(2));
+            if (r.getReading() < 30000)
+               readings.add(r);
+         }
+         rs.close();
+         long sTime = System.currentTimeMillis();
+         Collections.sort(readings);
+
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         JOptionPane.showMessageDialog(null, e.getLocalizedMessage());
+      }
+   }
 }
 
-class Reading implements Comparable<Reading> {
-	private double temp;
-	private final Double time;
-	private final double value;
+class Reading implements Comparable<Reading>
+{
+   private double temp;
+   private final Double time;
+   private final double value;
 
-	public Reading(long t, double v) {
-		time = new Double(t);
-		value = v;
-	}
+   public Reading(long t, double v)
+   {
+      time = new Double(t);
+      value = v;
+   }
 
-	@Override
-	public int compareTo(Reading o) {
-		return time.compareTo(o.time);
-	}
+   @Override
+   public int compareTo(Reading o)
+   {
+      return time.compareTo(o.time);
+   }
 
-	public double getReading() {
-		return value;
-	}
+   public double getReading()
+   {
+      return value;
+   }
 
-	public Double getTime() {
-		return time;
-	}
+   public Double getTime()
+   {
+      return time;
+   }
 }
