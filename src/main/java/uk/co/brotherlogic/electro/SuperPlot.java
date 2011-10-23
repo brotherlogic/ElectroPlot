@@ -9,7 +9,7 @@ public class SuperPlot {
 		Model m1 = new Model(0);
 		Model m2 = new Model(1);
 		Model m3 = new Model(2);
-		Model m4 = new Model(3);
+		Model m4 = new Model(5);
 		PlotPane p1 = new PlotPane(m1);
 		PlotPane p2 = new PlotPane(m2);
 		PlotPane p3 = new PlotPane(m3);

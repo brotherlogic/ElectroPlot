@@ -20,7 +20,7 @@ public class Model
 
    public static void main(String[] args)
    {
-      Model m = new Model(Integer.parseInt(args[0]));
+      Model m = new Model(1);
       PlotPane p = new PlotPane(m);
       JFrame framer = new JFrame();
       framer.add(p);
@@ -44,7 +44,7 @@ public class Model
    {
       initModel();
       List<Reading> tReadings = new LinkedList<Reading>();
-      long cTime = System.currentTimeMillis() - 2 * 60 * 60 * 1000;
+      long cTime = System.currentTimeMillis() - 24 * 60 * 60 * 1000;
       for (Reading r : readings)
          if (r.getTime() > cTime && r.getReading() < 30000)
             tReadings.add(r);
@@ -85,14 +85,25 @@ public class Model
          }
 
          String sql = "SELECT dt,watts from leccy WHERE sensor = ? order by dt DESC LIMIT 100000";
+
+         if ( sensor ==5)
+        	  sql = "SELECT dt,temp from leccy WHERE sensor = ? order by dt DESC LIMIT 100000";
          PreparedStatement ps = locDB.prepareStatement(sql);
+         if(sensor == 5)
+        	 ps.setInt(1,0);
+         else
          ps.setInt(1, sensor);
          if (readings.size() > 0)
          {
             sql = "SELECT dt,watts from leccy WHERE dt > ? and sensor = ?";
+            if ( sensor ==5)
+            	sql = "SELECT dt,temp from leccy WHERE dt > ? and sensor = ?";
             ps = locDB.prepareStatement(sql);
             ps.setTimestamp(1, new Timestamp(readings.get(readings.size() - 1).getTime()
                   .longValue()));
+            if (sensor == 5)
+            	ps.setInt(2,0);
+            else
             ps.setInt(2, sensor);
          }
 
