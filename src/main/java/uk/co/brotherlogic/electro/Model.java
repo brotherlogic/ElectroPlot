@@ -81,6 +81,7 @@ public class Model
          {
             Class.forName("org.postgresql.Driver");
 
+
             locDB = DriverManager.getConnection("jdbc:postgresql://192.168.1.100/leccy?user=leccy");
          }
 
