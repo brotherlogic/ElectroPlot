@@ -122,7 +122,9 @@ public class Model
       catch (Exception e)
       {
          e.printStackTrace();
-         JOptionPane.showMessageDialog(null, e.getLocalizedMessage());
+         
+         //Reset the model
+         locDB = null;
       }
    }
 }
