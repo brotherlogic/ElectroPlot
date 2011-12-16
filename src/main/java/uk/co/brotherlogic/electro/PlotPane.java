@@ -2,60 +2,80 @@ package uk.co.brotherlogic.electro;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.JPanel;
 
-public class PlotPane extends JPanel implements ModelListener {
+public class PlotPane extends JPanel implements ModelListener
+{
 
-	private List<Reading> readings;
+   private List<Reading> readings;
 
-	public PlotPane(Model m) {
-		readings = m.getReadingsFromPastHour(this);
-	}
+   public PlotPane(Model m)
+   {
+      readings = m.getReadingsFromPastHour(this);
+   }
 
-	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
-		double minTime = readings.get(0).getTime();
-		double maxTime = minTime;
+   @Override
+   public void paint(Graphics g)
+   {
+      super.paint(g);
+      double minTime = readings.get(0).getTime();
+      double maxTime = minTime;
 
-		double minRead = 30;
-		double maxRead = 0;
+      double minRead = 30;
+      double maxRead = 0;
 
-		for (Reading r : readings.subList(1, readings.size())) {
-			minTime = Math.min(minTime, r.getTime());
-			maxTime = Math.max(maxTime, r.getTime());
+      for (Reading r : readings.subList(1, readings.size()))
+      {
+         minTime = Math.min(minTime, r.getTime());
+         maxTime = Math.max(maxTime, r.getTime());
 
-			minRead = Math.min(minRead, r.getReading());
-			maxRead = Math.max(maxRead, r.getReading());
-		}
-		
-		Color c = g.getColor();
-		g.setColor(Color.red);
-		g.drawString("" + maxRead, this.getWidth()-100, 10);
-		g.drawString("" + minRead,this.getWidth()-100,this.getHeight()-50);   
-		g.setColor(c);
+         minRead = Math.min(minRead, r.getReading());
+         maxRead = Math.max(maxRead, r.getReading());
+      }
 
-		int sPointX = 0;
-		int sPointY = 0;
+      Color c = g.getColor();
+      g.setColor(Color.red);
+      g.drawString("" + maxRead, this.getWidth() - 100, 10);
+      g.drawString("" + minRead, this.getWidth() - 100, this.getHeight() - 50);
+      g.setColor(c);
 
-		for (Reading r : readings) {
-			int nx = (int) (((r.getTime() - minTime) / (maxTime - minTime)) * getWidth());
-			int ny = getHeight()
-					- (int) (((r.getReading() - minRead) / (maxRead - minRead)) * getHeight());
+      int sPointX = 0;
+      int sPointY = 0;
 
-			g.drawLine(sPointX, sPointY, nx, ny);
+      for (Reading r : readings)
+      {
+         int nx = (int) (((r.getTime() - minTime) / (maxTime - minTime)) * getWidth());
+         int ny = getHeight()
+               - (int) (((r.getReading() - minRead) / (maxRead - minRead)) * getHeight());
 
-			sPointX = nx;
-			sPointY = ny;
-		}
+         g.drawLine(sPointX, sPointY, nx, ny);
 
-	}
+         sPointX = nx;
+         sPointY = ny;
+      }
 
-	@Override
-	public void update(List<Reading> readings) {
-		this.readings = readings;
-		repaint();
-	}
+      Calendar startTime = Calendar.getInstance();
+      startTime.setTimeInMillis((long) minTime);
+      startTime.set(Calendar.MINUTE, 0);
+      // startTime.set(Calendar.HOUR, startTime.get(Calendar.HOUR + 1));
+      g.setColor(Color.BLUE);
+      while (startTime.getTimeInMillis() <= maxTime)
+      {
+         int nx = (int) (((startTime.getTimeInMillis() - minTime) / (maxTime - minTime)) * getWidth());
+         g.drawLine(nx, 0, nx, this.getHeight());
+         startTime.add(Calendar.HOUR, 1);
+      }
+      g.setColor(Color.BLACK);
+
+   }
+
+   @Override
+   public void update(List<Reading> readings)
+   {
+      this.readings = readings;
+      repaint();
+   }
 }
